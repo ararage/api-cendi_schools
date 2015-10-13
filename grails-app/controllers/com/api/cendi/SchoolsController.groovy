@@ -37,7 +37,7 @@ class SchoolsController {
             status: statusCode,
             error: error
         ]
-        render mapExcepction as GSON
+        render mapExcepction as JSON
     }
 
     def notAllowed(){
@@ -49,7 +49,7 @@ class SchoolsController {
             status: HttpServletResponse.SC_METHOD_NOT_ALLOWED,
             error:"not_allowed"
         ]
-        render mapResult as GSON
+        render mapResult as JSON
     }
 
     def getSchool() {
@@ -64,7 +64,7 @@ class SchoolsController {
                 //result = userService.getUser(params,dominio)
                 result = new SchoolsService().getSchool(params,dominio)
                 response.setStatus(HttpServletResponse.SC_OK)
-                render result as GSON
+                render result as JSON
                 needsProcessing=false;
             }catch(NotFoundException e){
                 needsProcessing=false;
@@ -88,7 +88,7 @@ class SchoolsController {
     def postSchool(){
         setHeaders()
         def dominio = request.getServerName()+":"+request.getServerPort()
-        def result
+        def result = [:]
         int retryCounter = 0
         int maxretry=15
         boolean needsProcessing = true
@@ -98,7 +98,7 @@ class SchoolsController {
                 //result = userService.postUser(request.JSON,dominio)
                 result = new SchoolsService().postSchool(request.JSON,dominio)
                 response.setStatus( HttpServletResponse.SC_CREATED)
-                render result as GSON
+                render result as JSON
                 needsProcessing=false;
             }catch(NotFoundException e){
                 needsProcessing=false;
@@ -112,7 +112,7 @@ class SchoolsController {
             }catch (OptimisticLockingFailureException olfex) {
                 if((retryCounter += 1) >= maxretry) renderException(olfex);
             }catch(Exception e){
-              println "Users Exception error----> "+e
+              println "Schools Exception error----> "+e
               needsProcessing=false;
               renderException(e)
             }
