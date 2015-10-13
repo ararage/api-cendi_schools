@@ -16,10 +16,12 @@ import org.joda.time.format.ISODateTimeFormat
 class SchoolsService {
 
     def postSchool(def jsonSchool, def dominio){
-    	Map jsonResult = [:]
+    	println "Entre al metodo PAPA"
+        Map jsonResult = [:]
     	def responseMessage = ''
     	School school = new School()
-    	def validAccess
+    	println "Despues de crear el objeto"
+        def validAccess
     	
     	if(!jsonSchool){
     		 throw new ConflictException("Empty JSON!")
@@ -39,7 +41,14 @@ class SchoolsService {
             throw new ConflictException("Bad JSON: birth not found on the json!")
         }
 
-        validAccess = new ValidAccess()
+        println "cheque las fechas"
+        
+        if(!jsonSchool.phones){
+            throw new ConflictException("Bad JSON: phones array not found on the json!")
+        }
+
+
+        //validAccess = new ValidAccess()
         
 
         for(element in jsonSchool.phones){
@@ -89,4 +98,19 @@ class SchoolsService {
         school.save(flush:true)
         jsonResult
 	}
+
+    def getShcool(def params, def dominio){
+        Map jsonResult = [:]
+        def schoolResult
+        if(!params.school_id){
+            throw new NotFoundException("Invalid URL, missing school_id")
+        }
+
+        schoolResult = School.findBySchool_id(params.school_id)
+        
+        new UtilitiesService().existSchool(userResult,params.school_id)
+
+        jsonResult = new UtilitiesService().fillSchoolResult()
+        jsonResult
+    }
 }

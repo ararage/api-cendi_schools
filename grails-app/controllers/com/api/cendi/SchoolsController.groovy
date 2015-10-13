@@ -9,6 +9,7 @@ import static org.springframework.http.HttpMethod.*
 import grails.plugin.gson.converters.GSON
 import org.springframework.dao.OptimisticLockingFailureException
 import com.api.cendi.SchoolsService
+import javax.servlet.http.HttpServletResponse
 
 class SchoolsController {
 
@@ -93,11 +94,12 @@ class SchoolsController {
         boolean needsProcessing = true
         while(needsProcessing && retryCounter < maxretry) {
             try{
+                println "Entre en el post"
                 //result = userService.postUser(request.JSON,dominio)
                 result = new SchoolsService().postSchool(request.JSON,dominio)
                 response.setStatus( HttpServletResponse.SC_CREATED)
-                needsProcessing=false;
                 render result as GSON
+                needsProcessing=false;
             }catch(NotFoundException e){
                 needsProcessing=false;
                 renderException(e)

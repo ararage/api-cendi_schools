@@ -37,6 +37,20 @@ class UtilitiesService {
 		jsonResult
     }
 
+    public Map fillSchoolResult(School school){
+    	Map jsonResult = [:]
+    	jsonResult.school_id = school.school_id
+		jsonResult.name = school.name
+		jsonResult.street = school.street
+		jsonResult.number = school.number
+		jsonResult.neighborhood = school.neighborhood
+		jsonResult.postal_code = school.postal_code
+		jsonResult.principal = school.principal
+		jsonResult.phones = school.phones
+
+		jsonResult
+    }
+
     public School fillSchoolObject(def jsonResult,School temp_school){
     	def school = new School()
     	//school.school_id = jsonResult.school_id
@@ -50,4 +64,11 @@ class UtilitiesService {
 		school.phones = temp_school
 		school
     }
+
+    public void existSchool(def school,def school_id){
+    	if(!school){
+    		throw new NotFoundException("The school with the school_id = "+school_id+" not found")
+    	}
+    }
+
 }
