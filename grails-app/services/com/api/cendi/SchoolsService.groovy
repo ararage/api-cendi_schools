@@ -20,7 +20,6 @@ class SchoolsService {
     	def responseMessage = ''
     	School school = new School()
         def validAccess
-        println"QUE PASO"
     	String uIdSchool
         int uNumeroIdSchool = 0
         def findSchool
@@ -37,7 +36,7 @@ class SchoolsService {
         println "Numero "+uNumeroIdSchool
 
     	if(!jsonSchool){
-    		 throw new ConflictException("Empty JSON!")
+    		throw new ConflictException("Empty JSON!")
     	}
     	
         if(jsonSchool.opening_date){
@@ -65,9 +64,7 @@ class SchoolsService {
         if(new UtilitiesService().existSchoolCheck(findSchool)){
             throw new ConflictException("The School with the school name: "+jsonSchool?.name+" already exists.")
         }
-        //validAccess = new ValidAccess()
-        
-
+       
         for(element in jsonSchool.phones){
         	def phoneClass = new Phone(
         		school_id : uNumeroIdSchool,
@@ -86,30 +83,10 @@ class SchoolsService {
             )
         }
 
-
-		/*jsonResult.school_id = jsonSchool.school_id
-		jsonResult.name = jsonSchool.name
-		jsonResult.street = jsonSchool.street
-		jsonResult.number = jsonSchool.number
-		jsonResult.neighborhood = jsonSchool.neighborhood
-		jsonResult.postal_code = jsonSchool.postal_code
-		jsonResult.principal = jsonSchool.principal
-		jsonResult.phones = school.phones*/
 		jsonResult = new UtilitiesService().fillSchoolResult(jsonSchool,school.phones,uNumeroIdSchool)
 		
-        println "Json Result "+jsonResult
         school = new UtilitiesService().fillSchoolObject(jsonResult,school)
-		println "Le school "+school
-        /*
-		school.school_id = jsonResult.school_id
-		school.name = jsonResult.name
-		school.street = jsonResult.street
-		school.number = jsonResult.number
-		school.neighborhood = jsonResult.neighborhood
-		school.postal_code = jsonResult.postal_code
-		school.principal = jsonResult.principal
-		*/
-
+		
        	if(!school.validate()) {
             school.errors.allErrors.each {
                 responseMessage += MessageFormat.format(it.defaultMessage, it.arguments) + " "
@@ -121,7 +98,7 @@ class SchoolsService {
         jsonResult
 	}
 
-    def getShcool(def params, def dominio){
+    def getSchool(def params, def dominio){
         Map jsonResult = [:]
         def schoolResult
         if(!params.school_id){
@@ -130,9 +107,112 @@ class SchoolsService {
 
         schoolResult = School.findBySchool_id(params.school_id)
         
-        new UtilitiesService().existSchool(userResult,params.school_id)
+        new UtilitiesService().existSchool(schoolResult,params.school_id)
 
-        jsonResult = new UtilitiesService().fillSchoolResult()
+        jsonResult = new UtilitiesService().fillSchoolResult(schoolResult)
         jsonResult
+    }
+
+    def putSchool(def params,def jsonSchool,def dominio){
+        Map jsonResult = [:]
+        def newSchool
+
+        if(!jsonSchool){
+            throw new ConflictException("Empty JSON!")
+        }
+
+        newSchool = School.findBySchool_id(params.school_id)
+        println "School "+newSchool
+        if(!new UtilitiesService().existSchoolCheck(newSchool)){
+            throw new ConflictException("The School with the school_id: "+params.school_id+" doesn't exists.")
+        }
+
+        if(jsonSchool?.name){
+            newSchool.name = jsonSchool?.name
+        }
+
+        if(jsonSchool?.neighborhood){
+            newSchool.neighborhood = jsonSchool?.neighborhood
+        }
+
+        if(jsonSchool?.street){
+            newSchool.street = jsonSchool?.street
+        }
+
+        if(jsonSchool?.number){
+            newSchool.number = jsonSchool?.number
+        }
+
+        if(jsonSchool?.postal_code){
+            newSchool.postal_code = jsonSchool?.postal_code
+        }
+
+        if(jsonSchool?.principal){
+            newSchool.principal = jsonSchool?.principal
+        }
+
+        if(jsonSchool?.opening_date){
+            try{
+                newSchool.opening_date = ISODateTimeFormat.dateTimeParser().parseDateTime(jsonSchool?.opening_date).toDate()
+            }catch(Exception e){
+                throw new BadRequestException("Wrong date format in date_of_birth. Must be ISO json format")
+            }
+        }
+
+        if(jsonSchool?.phones){
+            newSchool.phones = []
+            for(element in jsonSchool.phones){
+                def phoneClass = new Phone(
+                    school_id : newSchool.school_id,
+                    number : element.number
+                )
+
+                if(!phoneClass.validate()) {
+                    phoneClass.errors.allErrors.each {
+                        responseMessage += MessageFormat.format(it.defaultMessage, it.arguments) + " "
+                    }
+                    throw new BadRequestException(responseMessage)
+                }
+                newSchool.phones.add(
+                    school_id:""+phoneClass.school_id,
+                    number:""+phoneClass.number
+                )
+            }
+        }
+
+        jsonResult = new UtilitiesService().fillSchoolResult(newSchool)
+        newSchool.save(flush:true)
+        jsonResult
+    }
+
+    def deleteSchool(def params,def dominio){
+        Map jsonResult = [:]
+        def schoolResult
+
+        if(!params.school_id){
+             throw new NotFoundException("Invalid URL, missing user_id")
+        }
+
+        schoolResult = School.findBySchool_id(params.school_id)
+        
+        new UtilitiesService().existSchool(schoolResult,params.school_id)
+
+        jsonResult.comment = "The school with the school_id "+params.school_id+" has been deleted successfully"
+        schoolResult.delete(flush:true)
+
+        jsonResult
+    }
+
+    def getSchools(def dominio){
+        def result
+        def schools = School.createCriteria()
+        def escuelasList
+        
+        if(!schools){
+            throw new NotFoundException("Empty schools collection")
+        }
+
+        escuelasList = schools.list(){}
+        escuelasList
     }
 }

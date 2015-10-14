@@ -118,4 +118,102 @@ class SchoolsController {
             }
         }
     } 
+
+    def updateSchool(){
+        setHeaders()
+        def dominio = request.getServerName()+":"+request.getServerPort()
+        def result = [:]
+        int retryCounter = 0
+        int maxretry=15
+        boolean needsProcessing = true
+        while(needsProcessing && retryCounter < maxretry) {
+            try{
+                result = new SchoolsService().putSchool(params,request.JSON,dominio)
+                response.setStatus( HttpServletResponse.SC_CREATED)
+                render result as JSON
+                needsProcessing=false;
+            }catch(NotFoundException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch(ConflictException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch (BadRequestException e) {
+                needsProcessing=false;
+                renderException(e)
+            }catch (OptimisticLockingFailureException olfex) {
+                if((retryCounter += 1) >= maxretry) renderException(olfex);
+            }catch(Exception e){
+              println "Schools Exception error----> "+e
+              needsProcessing=false;
+              renderException(e)
+            }
+        }
+    }
+
+    def deleteSchool(){
+        setHeaders()
+        def dominio = request.getServerName()+":"+request.getServerPort()
+        def result = [:]
+        int retryCounter = 0
+        int maxretry=15
+        boolean needsProcessing = true
+        while(needsProcessing && retryCounter < maxretry) {
+            try{
+                result = new SchoolsService().deleteSchool(params,dominio)
+                response.setStatus( HttpServletResponse.SC_CREATED)
+                render result as JSON
+                needsProcessing=false;
+            }catch(NotFoundException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch(ConflictException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch (BadRequestException e) {
+                needsProcessing=false;
+                renderException(e)
+            }catch (OptimisticLockingFailureException olfex) {
+                if((retryCounter += 1) >= maxretry) renderException(olfex);
+            }catch(Exception e){
+              println "Schools Exception error----> "+e
+              needsProcessing=false;
+              renderException(e)
+            }
+        }
+    }
+
+    def getSchools(){
+        setHeaders()
+        def dominio = request.getServerName()+":"+request.getServerPort()
+        def result = [:]
+        int retryCounter = 0
+        int maxretry=15
+        boolean needsProcessing = true
+        while(needsProcessing && retryCounter < maxretry) {
+            try{
+                println "Entre en el get de todas las schools"
+                //result = userService.postUser(request.JSON,dominio)
+                result = new SchoolsService().getSchools(dominio)
+                response.setStatus( HttpServletResponse.SC_CREATED)
+                render result as JSON
+                needsProcessing=false;
+            }catch(NotFoundException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch(ConflictException e){
+                needsProcessing=false;
+                renderException(e)
+            }catch (BadRequestException e) {
+                needsProcessing=false;
+                renderException(e)
+            }catch (OptimisticLockingFailureException olfex) {
+                if((retryCounter += 1) >= maxretry) renderException(olfex);
+            }catch(Exception e){
+              println "Schools Exception error----> "+e
+              needsProcessing=false;
+              renderException(e)
+            }
+        }
+    }
 }
