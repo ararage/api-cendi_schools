@@ -9,6 +9,7 @@ import schools.ValidAccess
 import com.api.cendi.School
 import com.api.cendi.Phone
 import com.api.util.UtilitiesService
+import java.util.*
 import grails.converters.*
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.ISODateTimeFormat
@@ -64,11 +65,17 @@ class SchoolsService {
         if(new UtilitiesService().existSchoolCheck(findSchool)){
             throw new ConflictException("The School with the school name: "+jsonSchool?.name+" already exists.")
         }
+
+        Set setA = new HashSet();
+
+        for(telefono in jsonSchool?.phones){
+            setA.add(""+telefono.number)
+        } 
        
-        for(element in jsonSchool.phones){
+        for(element in setA){
         	def phoneClass = new Phone(
         		school_id : uNumeroIdSchool,
-        		number : element.number
+        		number : element
         	)
 
         	if(!phoneClass.validate()) {
@@ -159,12 +166,19 @@ class SchoolsService {
             }
         }
 
-        if(jsonSchool?.phones){
+        if(jsonSchool.phones.size() > 0 ){
             newSchool.phones = []
-            for(element in jsonSchool.phones){
+
+            Set setA = new HashSet();
+
+            for(telefono in jsonSchool?.phones){
+                setA.add(""+telefono.number)
+            } 
+
+            for(element in setA){
                 def phoneClass = new Phone(
                     school_id : newSchool.school_id,
-                    number : element.number
+                    number : element
                 )
 
                 if(!phoneClass.validate()) {
@@ -178,6 +192,8 @@ class SchoolsService {
                     number:""+phoneClass.number
                 )
             }
+        }else if(jsonSchool.phones.size() == 0){
+            newSchool.phones = []
         }
 
         jsonResult = new UtilitiesService().fillSchoolResult(newSchool)
